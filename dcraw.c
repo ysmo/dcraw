@@ -62,6 +62,7 @@ typedef __int64 INT64;
 typedef unsigned __int64 UINT64;
 #else
 #include <unistd.h>
+#include <arpa/inet.h>
 #include <utime.h>
 #include <netinet/in.h>
 typedef long long INT64;
