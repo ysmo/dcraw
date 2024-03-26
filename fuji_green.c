@@ -5,12 +5,15 @@
    $Date: 2006/03/01 01:46:47 $
  */
 
+#define _XOPEN_SOURCE
 #include <ctype.h>
 #include <math.h>
 #include <setjmp.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <arpa/inet.h>
+#include <unistd.h>
 
 #define ushort UshORt
 typedef unsigned char uchar;

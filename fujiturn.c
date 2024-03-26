@@ -17,6 +17,7 @@
 #include <fcntl.h>
 
 #ifdef _16BIT
+#include <arpa/inet.h>
 typedef unsigned short value;
 #else
 typedef unsigned char value;
