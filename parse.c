@@ -1213,16 +1213,6 @@ void parse_qt (int level, int end)
   }
 }
 
-char *memmem (char *haystack, size_t haystacklen,
-              char *needle, size_t needlelen)
-{
-  char *c;
-  for (c = haystack; c <= haystack + haystacklen - needlelen; c++)
-    if (!memcmp (c, needle, needlelen))
-      return c;
-  return NULL;
-}
-
 /*
    Identify which camera created this file, and set global variables
    accordingly.	 Return nonzero if the file cannot be decoded.
