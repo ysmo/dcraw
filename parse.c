@@ -1229,8 +1229,8 @@ void identify()
   tread (head, 1, 32, ifp);
   tseek (ifp, 0, SEEK_END);
   fsize = ftell(ifp);
-  if ((cp = memmem (head, 32, "MMMM", 4)) ||
-      (cp = memmem (head, 32, "IIII", 4))) {
+  if ((cp = (char *) memmem (head, 32, "MMMM", 4)) ||
+      (cp = (char *) memmem (head, 32, "IIII", 4))) {
     parse_phase_one (cp-head);
     if (cp-head) parse_tiff (0,0);
   } else if (order == 0x4949 || order == 0x4d4d) {
