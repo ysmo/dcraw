@@ -9,6 +9,7 @@
    $Date: 2018/06/01 21:26:34 $
  */
 
+#define _GNU_SOURCE
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
