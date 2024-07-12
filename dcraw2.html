@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>WebAssembly Demo</title>
+</head>
+<body>
+  <h1>WebAssembly with WASI Example</h1>
+     <input type="file" id="fileInput" accept=".cr2">
+    <button onclick="convertFile()">Convert to JPEG</button>
+    <img id="outputImage" alt="Converted JPEG">
+        <!-- <script src="https://unpkg.com/@wasmer/wasi@1.2.2/dist/Library.umd.js"></script> -->
+ <script>
+
+        let dcrawWasmInstance;
+      async function loadWasmModule() {
+
+   
+    const importObject = {
+        wasi_snapshot_preview1: {
+            args_get: () => { console.log("args_get called"); },
+            args_sizes_get: () => { console.log("args_sizes_get called"); },
+            environ_get: () => { console.log("environ_get called"); },
+            environ_sizes_get: () => { console.log("environ_sizes_get called"); },
+            fd_close: () => { console.log("fd_close called"); },
+            fd_fdstat_get: () => { console.log("fd_fdstat_get called"); },
+            fd_fdstat_set_flags: () => { console.log("fd_fdstat_set_flags called"); },
+            fd_prestat_get: () => { console.log("fd_prestat_get called"); },
+            fd_prestat_dir_name: () => { console.log("fd_prestat_dir_name called"); },
+            fd_read: () => { console.log("fd_read called"); },
+            fd_seek: () => { console.log("fd_seek called"); },
+            fd_write: (fd, iovs_ptr, iovs_len, nwritten_ptr) => {
+                console.log("fd_write called");
+                const memory = new Uint8Array(instance.exports.memory.buffer);
+                const textDecoder = new TextDecoder();
+                let written = 0;
+                for (let i = 0; i < iovs_len; i++) {
+                    const iov = new DataView(memory.buffer, iovs_ptr + i * 8, 8);
+                    const ptr = iov.getUint32(0, true);
+                    const len = iov.getUint32(4, true);
+                    const chunk = memory.slice(ptr, ptr + len);
+                    console.log(textDecoder.decode(chunk));
+                    written += len;
+                }
+                new DataView(memory.buffer).setUint32(nwritten_ptr, written, true);
+                return 0;
+            },
+            proc_exit: (code) => { console.log(`Exit with code: ${code}`); },
+            path_filestat_set_times: () => { console.log("path_filestat_set_times called"); },
+            path_open: () => { console.log("path_open called"); }
+
+            
+            // 添加其他必要的 WASI 导入函数
+        }
+    };
+
+
+    const response = await fetch('dcraw.wasm');
+    const bytes = await response.arrayBuffer();
+    const { instance } = await WebAssembly.instantiate(bytes, importObject);
+  dcrawWasmInstance = instance;
+            dcrawWasmInstance.exports._start();
+}
+
+  async function convertFile() {
+            const fileInput = document.getElementById('fileInput');
+            const file = fileInput.files[0];
+            if (!file) {
+                alert('Please select a .cr2 file.');
+                return;
+            }
+
+            const arrayBuffer = await file.arrayBuffer();
+            const uint8Array = new Uint8Array(arrayBuffer);
+            const memBuffer = new Uint8Array(dcrawWasmInstance.exports.memory.buffer);
+            memBuffer.set(new Uint8Array(arrayBuffer), /* 适当的偏移量 */);
+            // TODO: 将文件数据传递给 dcraw 并执行转换
+            // 你需要根据 dcraw 的使用方式来实现具体的逻辑
+
+            // 假设我们已经获得了转换后的 JPEG 数据
+            const jpegData = new Uint8Array([/* JPEG data here */]);
+
+            const blob = new Blob([jpegData], { type: 'image/jpeg' });
+            const url = URL.createObjectURL(blob);
+            document.getElementById('outputImage').src = url;
+        }
+
+// 页面加载时初始化WASM模块
+window.onload = loadWasmModule;
+    </script>
+</body>
+</html>

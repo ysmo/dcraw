@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>WebAssembly Demo</title>
+</head>
+<body>
+  <h1>WebAssembly with WASI Example</h1>
+    <button onclick="callHelloWorld()">Call C Function</button>
+        <!-- <script src="https://unpkg.com/@wasmer/wasi@1.2.2/dist/Library.umd.js"></script> -->
+ <script>
+      async function loadWasmModule() {
+    const response = await fetch('hello.wasm');
+    const bytes = await response.arrayBuffer();
+
+   
+    const importObject = {
+        wasi_snapshot_preview1: {
+            args_get: () => { console.log("args_get called"); },
+            args_sizes_get: () => { console.log("args_sizes_get called"); },
+            environ_get: () => { console.log("environ_get called"); },
+            environ_sizes_get: () => { console.log("environ_sizes_get called"); },
+            fd_close: () => { console.log("fd_close called"); },
+            fd_fdstat_get: () => { console.log("fd_fdstat_get called"); },
+            fd_fdstat_set_flags: () => { console.log("fd_fdstat_set_flags called"); },
+            fd_prestat_get: () => { console.log("fd_prestat_get called"); },
+            fd_prestat_dir_name: () => { console.log("fd_prestat_dir_name called"); },
+            fd_read: () => { console.log("fd_read called"); },
+            fd_seek: () => { console.log("fd_seek called"); },
+            fd_write: (fd, iovs_ptr, iovs_len, nwritten_ptr) => {
+                console.log("fd_write called");
+                const memory = new Uint8Array(instance.exports.memory.buffer);
+                const textDecoder = new TextDecoder();
+                let written = 0;
+                for (let i = 0; i < iovs_len; i++) {
+                    const iov = new DataView(memory.buffer, iovs_ptr + i * 8, 8);
+                    const ptr = iov.getUint32(0, true);
+                    const len = iov.getUint32(4, true);
+                    const chunk = memory.slice(ptr, ptr + len);
+                    console.log(textDecoder.decode(chunk));
+                    written += len;
+                }
+                new DataView(memory.buffer).setUint32(nwritten_ptr, written, true);
+                return 0;
+            },
+            proc_exit: (code) => { console.log(`Exit with code: ${code}`); }
+            // 添加其他必要的 WASI 导入函数
+        }
+    };
+
+
+    const { instance } = await WebAssembly.instantiate(bytes, importObject);
+    instance.exports._start();
+}
+
+function callHelloWorld() {
+    loadWasmModule().catch(err => console.error('Failed to load wasm module:', err));
+}
+
+// 页面加载时初始化WASM模块
+window.onload = loadWasmModule;
+    </script>
+</body>
+</html>

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CR2 to JPG Converter</title>
+</head>
+<body>
+  <h1>CR2 to JPG Converter</h1>
+
+  <!-- File input for selecting CR2 file -->
+  <input type="file" id="fileInput" accept=".cr2">
+  <button onclick="convertAndDisplay()">Convert & Display</button>
+
+  <!-- Display converted JPG image -->
+  <div>
+    <h2>Converted Image:</h2>
+    <img id="convertedImg" src="" alt="Converted Image">
+  </div>
+
+  <!-- Load WASM file -->
+  <!-- <script src="dcraw.js"></script> -->
+  <!-- Your JavaScript code to interact with dcraw.wasm will go here -->
+  <script>
+    async function convertAndDisplay() {
+      const fileInput = document.getElementById('fileInput');
+      const file = fileInput.files[0];
+      
+      if (!file) {
+        alert('Please select a CR2 file.');
+        return;
+      }
+
+      const bytes = await readFileAsArrayBuffer(file);
+      const jpegData = convertCR2ToJPG(bytes);
+
+      if (!jpegData) {
+        alert('Failed to convert CR2 to JPG.');
+        return;
+      }
+
+      // Display the converted image
+      const convertedImg = document.getElementById('convertedImg');
+      const blob = new Blob([jpegData], { type: 'image/jpeg' });
+      convertedImg.src = URL.createObjectURL(blob);
+    }
+
+    async function readFileAsArrayBuffer(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsArrayBuffer(file);
+      });
+    }
+
+    function convertCR2ToJPG(cr2Bytes) {
+      const { instance } = WebAssembly.instantiateModule(dcrawWasm, {});
+
+      // Convert CR2 bytes to JPG bytes using dcraw.wasm
+      // Modify this part based on your WASM module's API
+      // Example: const jpgBytes = instance.exports.convertCR2ToJPG(cr2Bytes);
+
+      // Replace with actual conversion logic
+      // For dcraw, you would call functions exposed by your dcraw.wasm module
+      // and pass the CR2 bytes to it for conversion.
+
+      return null; // Replace with actual JPG bytes
+    }
+  </script>
+</body>
+</html>
